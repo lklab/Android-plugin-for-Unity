@@ -23,68 +23,61 @@ public class ViewController
     {
         mContext = context;
 
-        mContext.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                mRootLayout = new RelativeLayout(mContext);
-                RelativeLayout.LayoutParams rootLayoutParams = new RelativeLayout.LayoutParams(
-                        LinearLayout.LayoutParams.MATCH_PARENT,
-                        LinearLayout.LayoutParams.WRAP_CONTENT
-                );
-                mContext.addContentView(mRootLayout, rootLayoutParams);
-            }
+        mContext.runOnUiThread(() -> {
+            mRootLayout = new RelativeLayout(mContext);
+            RelativeLayout.LayoutParams rootLayoutParams = new RelativeLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+            );
+            mContext.addContentView(mRootLayout, rootLayoutParams);
         });
     }
 
     public void show()
     {
-        mContext.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                if (mMainView != null)
-                    return;
+        mContext.runOnUiThread(() -> {
+            if (mMainView != null)
+                return;
 
-                mMainView = mContext.getLayoutInflater().inflate(R.layout.my_view, mRootLayout);
+            mMainView = mContext.getLayoutInflater().inflate(R.layout.my_view, mRootLayout, false);
+            mRootLayout.addView(mMainView);
 
-                mCountText = (TextView)mMainView.findViewById(R.id.count_text);
-                mCount = 0;
+            mCountText = mMainView.findViewById(R.id.count_text);
+            mCount = 0;
+            setCountText(mCountText, mCount);
 
-                Button addCountButton = (Button)mMainView.findViewById(R.id.add_unity_count);
-                addCountButton.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        UnityPlayer.UnitySendMessage(
-                                "NativeMessageReceiver",
-                                "AddCount",
-                                "");
-                    }
-                });
-            }
+            Button addCountButton = mMainView.findViewById(R.id.add_unity_count);
+            addCountButton.setOnClickListener(v -> UnityPlayer.UnitySendMessage(
+                    "NativeMessageReceiver",
+                    "AddCount",
+                    ""));
         });
     }
 
     public void hide()
     {
-        mContext.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                if (mMainView == null)
-                    return;
+        mContext.runOnUiThread(() -> {
+            if (mMainView == null)
+                return;
 
-                mRootLayout.removeView(mMainView);
-                mMainView = null;
-            }
+            mRootLayout.removeView(mMainView);
+            mMainView = null;
         });
     }
 
     public void addCount()
     {
-        mContext.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                mCount++;
-                mCountText.setText("android count: " + mCount);
-            }
+        mContext.runOnUiThread(() -> {
+            if (mMainView == null)
+                return;
+
+            mCount++;
+            setCountText(mCountText, mCount);
         });
+    }
+
+    private void setCountText(TextView text, int count)
+    {
+        text.setText("android count: " + count);
     }
 }
